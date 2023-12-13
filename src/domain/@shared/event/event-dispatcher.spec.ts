@@ -1,3 +1,8 @@
+import CustomerCreatedEvent from "../../customer/event/create/customer-created.event";
+import SendConsoleWhenCustomerIsCreatedHandlerFirst from "../../customer/event/create/handler/send-console-when-customer-is-created-first.handler";
+import SendConsoleWhenCustomerIsCreatedHandlerSecond from "../../customer/event/create/handler/send-console-when-customer-is-created-second.handler";
+import CustomerUpdatedEvent from "../../customer/event/update/customer-updated.event";
+import SendConsoleWhenCustomerAddressIsChanged from "../../customer/event/update/handler/send-console-when-customer-address-is-changed.handler";
 import SendEmailWhenProductIsCreatedHandler from "../../product/event/handler/send-email-when-product-is-created.handler";
 import ProductCreatedEvent from "../../product/event/product-created.event";
 import EventDispatcher from "./event-dispatcher";
@@ -19,7 +24,6 @@ describe("Domain events tests", () => {
       eventDispatcher.getEventHandlers["ProductCreatedEvent"][0]
     ).toMatchObject(eventHandler);
   });
-
   it("should unregister an event handler", () => {
     const eventDispatcher = new EventDispatcher();
     const eventHandler = new SendEmailWhenProductIsCreatedHandler();
@@ -39,7 +43,6 @@ describe("Domain events tests", () => {
       0
     );
   });
-
   it("should unregister all event handlers", () => {
     const eventDispatcher = new EventDispatcher();
     const eventHandler = new SendEmailWhenProductIsCreatedHandler();
@@ -56,8 +59,7 @@ describe("Domain events tests", () => {
       eventDispatcher.getEventHandlers["ProductCreatedEvent"]
     ).toBeUndefined();
   });
-
-  it("should notify all event handlers", () => {
+  it("should notify all event handlers for create a product", () => {
     const eventDispatcher = new EventDispatcher();
     const eventHandler = new SendEmailWhenProductIsCreatedHandler();
     const spyEventHandler = jest.spyOn(eventHandler, "handle");
@@ -76,6 +78,52 @@ describe("Domain events tests", () => {
 
     // Quando o notify for executado o SendEmailWhenProductIsCreatedHandler.handle() deve ser chamado
     eventDispatcher.notify(productCreatedEvent);
+
+    expect(spyEventHandler).toHaveBeenCalled();
+  });
+  it("should notify all event handlers for create a customer", () => {
+    const eventDispatcher = new EventDispatcher();
+    const eventHandler1 = new SendConsoleWhenCustomerIsCreatedHandlerFirst();
+    const eventHandler2 = new SendConsoleWhenCustomerIsCreatedHandlerSecond();
+    const spyEventHandler1 = jest.spyOn(eventHandler1, "handle");
+    const spyEventHandler2 = jest.spyOn(eventHandler2, "handle");
+
+    eventDispatcher.register("CustomerCreatedEvent", eventHandler1);
+    eventDispatcher.register("CustomerCreatedEvent", eventHandler2);
+
+    expect(
+      eventDispatcher.getEventHandlers["CustomerCreatedEvent"][0]
+    ).toMatchObject(eventHandler1);
+
+    const createdEvent = new CustomerCreatedEvent({
+      name: "Customer 1",
+      email: "test@test.com"
+    });
+
+    eventDispatcher.notify(createdEvent);
+
+    expect(spyEventHandler1).toHaveBeenCalled();
+    expect(spyEventHandler2).toHaveBeenCalled();
+  });
+  it("should notify all event handlers for update a customer", () => {
+    const eventDispatcher = new EventDispatcher();
+    const eventHandler = new SendConsoleWhenCustomerAddressIsChanged();
+    const spyEventHandler = jest.spyOn(eventHandler, "handle");
+
+    eventDispatcher.register("CustomerUpdatedEvent", eventHandler);
+
+    expect(
+      eventDispatcher.getEventHandlers["CustomerUpdatedEvent"][0]
+    ).toMatchObject(eventHandler);
+
+    const updatedEvent = new CustomerUpdatedEvent({
+      customer_id: 1,
+      name: "Customer 1",
+      email: "teste@teste.com", 
+      address: "Rua teste, 123"
+    });
+
+    eventDispatcher.notify(updatedEvent);
 
     expect(spyEventHandler).toHaveBeenCalled();
   });

@@ -4,7 +4,7 @@ Nesse desafio você deverá fazer com que a classe OrderRepository implemente to
 
 Após realizar tal implementação submeta seu projeto, nesse ponto todos os testes devem estar passando.
 
-# Desafio 2: Eventos de Customer
+# Desafio 2: Eventos de Customer :white_check_mark:
 
 Agora que você já possui a base sobre Domain Events, implemente dois Eventos de Domínio para o agregado de Customer.
 
